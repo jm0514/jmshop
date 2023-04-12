@@ -1,6 +1,7 @@
 package com.shop.jmshop.service;
 
 import com.shop.jmshop.dto.ItemFormDto;
+import com.shop.jmshop.dto.ItemImgDto;
 import com.shop.jmshop.entity.Item;
 import com.shop.jmshop.entity.ItemImg;
 import com.shop.jmshop.repository.ItemImgRepository;
@@ -10,7 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -34,8 +38,7 @@ public class ItemService {
             itemImg.setItem(item);
             if (i == 0) {
                 itemImg.setRepImgYn("Y");
-            }
-            else {
+            } else {
                 itemImg.setRepImgYn("N");
             }
             itemImgService.saveItemImg(itemImg, itemImgFileList.get(i));
@@ -43,6 +46,43 @@ public class ItemService {
 
         return item.getId();
     }
+
+    @Transactional(readOnly = true)
+    // 트랜잭션을 읽기 전용으로 설정해서 더티체킹을 수행하지 않음. 조회만 하기 때문에 더티체킹이 필요없음(성능 향상)
+    public ItemFormDto getItemDtl(Long itemId) {
+
+        List<ItemImg> itemImgList = itemImgRepository.findByItemIdOrderByIdAsc(itemId);
+        List<ItemImgDto> itemImgDtoList = new ArrayList<>();
+        for(ItemImg itemImg : itemImgList){
+            ItemImgDto itemImgDto = ItemImgDto.of(itemImg);
+            itemImgDtoList.add(itemImgDto);
+        }
+
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new EntityNotFoundException());
+        ItemFormDto itemFormDto = ItemFormDto.of(item);
+        itemFormDto.setItemImgDtoList(itemImgDtoList);
+        return itemFormDto;
+    }
+
+    public Long updateItem(ItemFormDto itemFormDto
+            , List<MultipartFile> itemImgFileList) throws Exception{
+
+        //상품 수정
+        //Optional을 사용
+        Item item = itemRepository.findById(itemFormDto.getId())
+                .orElseThrow(EntityNotFoundException::new);
+        item.updateItem(itemFormDto);
+
+        List<Long> itemImgIds = itemFormDto.getItemImgIds();
+        //이미지 등록
+        for (int i = 0; i < itemImgFileList.size(); i++) {
+            itemImgService.updateItemImg(itemImgIds.get(i), itemImgFileList.get(i));
+        }
+
+        return item.getId();
+    }
+
 }
 
 
