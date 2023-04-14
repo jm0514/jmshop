@@ -2,11 +2,14 @@ package com.shop.jmshop.service;
 
 import com.shop.jmshop.dto.ItemFormDto;
 import com.shop.jmshop.dto.ItemImgDto;
+import com.shop.jmshop.dto.ItemSearchDto;
 import com.shop.jmshop.entity.Item;
 import com.shop.jmshop.entity.ItemImg;
 import com.shop.jmshop.repository.ItemImgRepository;
 import com.shop.jmshop.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -53,7 +55,7 @@ public class ItemService {
 
         List<ItemImg> itemImgList = itemImgRepository.findByItemIdOrderByIdAsc(itemId);
         List<ItemImgDto> itemImgDtoList = new ArrayList<>();
-        for(ItemImg itemImg : itemImgList){
+        for (ItemImg itemImg : itemImgList) {
             ItemImgDto itemImgDto = ItemImgDto.of(itemImg);
             itemImgDtoList.add(itemImgDto);
         }
@@ -66,7 +68,7 @@ public class ItemService {
     }
 
     public Long updateItem(ItemFormDto itemFormDto
-            , List<MultipartFile> itemImgFileList) throws Exception{
+            , List<MultipartFile> itemImgFileList) throws Exception {
 
         //상품 수정
         //Optional을 사용
@@ -83,6 +85,11 @@ public class ItemService {
         return item.getId();
     }
 
+    @Transactional(readOnly = true)
+    public Page<Item> getAdminItemPage(ItemSearchDto itemSearchDto,
+                                       Pageable pageable) {
+        return itemRepository.getAdminItemPage(itemSearchDto, pageable);
+    }
 }
 
 
