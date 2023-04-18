@@ -3,6 +3,7 @@ package com.shop.jmshop.service;
 import com.shop.jmshop.dto.ItemFormDto;
 import com.shop.jmshop.dto.ItemImgDto;
 import com.shop.jmshop.dto.ItemSearchDto;
+import com.shop.jmshop.dto.MainItemDto;
 import com.shop.jmshop.entity.Item;
 import com.shop.jmshop.entity.ItemImg;
 import com.shop.jmshop.repository.ItemImgRepository;
@@ -86,10 +87,15 @@ public class ItemService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Item> getAdminItemPage(ItemSearchDto itemSearchDto,
-                                       Pageable pageable) {
+    public Page<Item> getAdminItemPage(ItemSearchDto itemSearchDto, Pageable pageable) {
         return itemRepository.getAdminItemPage(itemSearchDto, pageable);
     }
+
+    @Transactional(readOnly = true)
+    public Page<MainItemDto> getMainItemPage(ItemSearchDto itemSearchDto, Pageable pageable) {
+        return itemRepository.getMainItemPage(itemSearchDto, pageable);
+    }
+
 }
 
 
